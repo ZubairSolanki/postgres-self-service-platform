@@ -2362,3 +2362,29 @@ sudo apt-get install docker.io
 docker --version
 
 sudo apt-get install docker-compose-v2
+
+# -------------------------------------------------------------------------------
+
+Before (local development)
+yamlports:
+  - "5173:80"
+This means: "map port 80 inside the container to port 5173 on the host machine." So you had to visit http://localhost:5173 — the 5173 was chosen just to match what you were used to from Vite's dev server, purely a convention, not a requirement.
+After (production on EC2)
+yamlports:
+  - "80:80"
+This means: "map port 80 inside the container to port 80 on the host machine (your EC2 server)."
+Why this matters
+Port 80 is the standard, default port for HTTP traffic on the web. When you type a URL like http://example.com into a browser without specifying a port, the browser automatically assumes port 80. That's just how HTTP works by convention — it's been the default since the web began.
+What this means practically
+URL you typeWhat actually happenshttp://your-ec2-ipBrowser automatically connects to port 80http://your-ec2-ip:5173Browser connects to port 5173 explicitly
+If you'd left it as 5173:80, your live demo URL would be the clunky:
+http://13.234.56.78:5173
+By mapping to port 80 instead, your demo URL becomes the clean, professional-looking:
+http://13.234.56.78
+Why this matters for your portfolio
+When you send this link to a recruiter or put it in your resume/GitHub README, http://13.234.56.78 looks like a real, deployed web application. http://13.234.56.78:5173 looks like a half-finished dev server someone forgot to clean up — small detail, but it does affect first impressions.
+Also important: locally, you kept using 5173 because port 80 sometimes requires special permissions on your own machine (and might conflict with other things like Skype or IIS on Windows) — but on a fresh Ubuntu EC2 server, port 80 is free and it's the expected convention for a public-facing site.
+
+----------------------------------------------------------------------------------
+
+

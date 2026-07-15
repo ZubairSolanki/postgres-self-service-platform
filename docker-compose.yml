@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: platform_postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: platform_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d platform_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: platform_backend
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgres:5432/platform_db
+      JWT_SECRET: replace_with_a_long_random_string
+      PORT: 4000
+      PG_ADMIN_USER: admin
+      PG_ADMIN_PASSWORD: admin123
+      PG_HOST: postgres
+      PG_PORT: 5432
+      BACKUP_DIR: /app/backups
+    ports:
+      - "4000:4000"
+    volumes:
+      - backend_backups:/app/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: platform_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  backend_backups:

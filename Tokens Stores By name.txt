@@ -1,0 +1,22 @@
+user 1
+------------------------------
+{
+    "email":"zubair@gmail.com",
+    "password":"zubair@123"
+}
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc4MzY3MzYzNywiZXhwIjoxNzgzNjgwODM3fQ.kXZYDq24sY8C1-sUvTPfnfVr_VMYIN6Yo0vAvj4AeYI
+---------------------------------------------------------------------------------------------------------------------
+
+user2
+--------------------------------
+
+{
+    "email":"ammu@gmail.com",
+    "password":"ammu@123"
+}
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTc4MzY3MzcyMywiZXhwIjoxNzgzNjgwOTIzfQ.wNYAhggn-SSTpYHlhtKyQgN5t4KIE9kBn-sygNSWcYo
+
+-------------------------------------
+

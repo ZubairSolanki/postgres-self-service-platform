@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: 'http://35.154.66.60:4000/api',
+  baseURL: 'http://18.227.177.149:4000/api',
 })
 
 export const setAuthToken = (token) => {

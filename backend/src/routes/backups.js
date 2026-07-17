@@ -3,8 +3,10 @@ const { execFile } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const pool = require('../db');
+const multer = require('multer');
 const { sanitizeIdentifier } = require('../utils/sanitize');
 const router = express.Router();
+const upload = multer({ dest: '/tmp/uploads/' });
 
 const BACKUP_DIR = path.resolve(process.env.BACKUP_DIR || './backups');
 if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
@@ -148,6 +150,49 @@ router.get('/:dbName/download/:fileName', async (req, res) => {
   }
 
   res.download(filePath, fileName);
+});
+
+
+// RESTORE from an uploaded local file
+router.post('/:dbName/restore-upload', upload.single('backupFile'), async (req, res) => {
+  const userId = req.user.userId;
+  const dbName = sanitizeIdentifier(req.params.dbName);
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const owned = await pool.query(
+    'SELECT * FROM databases WHERE db_name=$1 AND owner_id=$2',
+    [dbName, userId]
+  );
+  if (owned.rows.length === 0) {
+    fs.unlinkSync(req.file.path); // clean up temp file
+    return res.status(403).json({ error: 'Not your database' });
+  }
+
+  const args = [
+    '-h', process.env.PG_HOST,
+    '-U', process.env.PG_ADMIN_USER,
+    '-p', process.env.PG_PORT,
+    '-d', dbName,
+    '-f', req.file.path
+  ];
+
+  execFile('psql', args, { env: { ...process.env, PGPASSWORD: process.env.PG_ADMIN_PASSWORD } }, async (err, stdout, stderr) => {
+    fs.unlinkSync(req.file.path); // always clean up the temp upload, success or fail
+
+    if (err) {
+      return res.status(500).json({ error: stderr || err.message });
+    }
+
+    await pool.query(
+      'INSERT INTO audit_logs (user_id, action, details) VALUES ($1, $2, $3)',
+      [userId, 'restore_from_upload', JSON.stringify({ dbName, originalName: req.file.originalname })]
+    );
+
+    res.json({ message: 'Restore from uploaded file complete' });
+  });
 });
 
 module.exports = router;

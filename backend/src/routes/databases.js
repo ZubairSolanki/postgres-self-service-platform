@@ -50,7 +50,7 @@ router.post('/create', async (req, res) => {
     res.status(201).json({
       dbName,
       dbUser,
-      connectionString: `postgresql://${dbUser}:${dbPass}@${process.env.PG_HOST}:${process.env.PG_PORT}/${dbName}`
+      connectionString: `postgresql://${dbUser}:${dbPass}@${process.env.PG_PUBLIC_HOST}:${process.env.PG_PORT}/${dbName}`
     });
   } catch (err) {
     res.status(400).json({ error: err.message });
